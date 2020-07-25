@@ -46,20 +46,21 @@ const CartProvider: React.FC = ({ children }) => {
   const addToCart = useCallback(
     async product => {
       const productExists = products.find(p => p.id === product.id);
+      let updatedProducts = [];
 
       if (productExists) {
-        setProducts(
-          products.map(p =>
-            p.id === product.id ? { ...product, quantity: p.quantity + 1 } : p,
-          ),
+        updatedProducts = products.map(p =>
+          p.id === product.id ? { ...product, quantity: p.quantity + 1 } : p,
         );
       } else {
-        setProducts([...products, { ...product, quantity: 1 }]);
+        updatedProducts = [...products, { ...product, quantity: 1 }];
       }
+
+      setProducts(updatedProducts);
 
       await AsyncStorage.setItem(
         '@GoMarketplace:products',
-        JSON.stringify(products),
+        JSON.stringify(updatedProducts),
       );
     },
     [products],
@@ -90,6 +91,12 @@ const CartProvider: React.FC = ({ children }) => {
           ? { ...product, quantity: product.quantity - 1 }
           : product,
       );
+
+      const productWithoutQuantity = newProducts.find(p => p.quantity === 0);
+
+      if (productWithoutQuantity) {
+        newProducts.splice(newProducts.indexOf(productWithoutQuantity));
+      }
 
       setProducts(newProducts);
 
